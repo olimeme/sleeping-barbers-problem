@@ -1,60 +1,32 @@
-public class Barber implements Runnable {
-    private boolean sleeping;
-    private WaitingRoom waitingRoom;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadLocalRandom;
 
-    public Barber() {
-        this.sleeping = false;
+public class Barber implements Runnable {
+    public static final int MEAN_CUT_TIME = 3000;
+    public static final int STANDARD_DEVIATION_CUT_TIME = 1000;
+    private int id;
+    private Semaphore barberAvailable;
+    private Semaphore customerAvailable;
+
+    public Barber(int id, Semaphore barberAvailable, Semaphore customerAvailable) {
+        this.barberAvailable = barberAvailable;
+        this.customerAvailable = customerAvailable;
+        this.id = id;
     }
 
     @Override
     public void run() {
-        try {
-            this.cut();
-        } catch (InterruptedException e) {
-            System.out.println("barber has finished his job");
-        }
-    }
-
-    public void sleep() {
-        this.sleeping = true;
-    }
-
-    public void wakeUp() {
-        this.sleeping = false;
-    }
-
-    public boolean isSleeping() {
-        return sleeping;
-    }
-
-    public void checkWaitingRoom() {
-        if (waitingRoom.isEmpty()) {
-            this.sleep();
-        } else {
-            this.wakeUp();
-        }
-    }
-    // public void sitNextCustomer() throws InterruptedException {
-    // double mc = 4; // mean calling time
-    // double sdc = 1; // standard deviation calling time
-    // double timeCalling = mc + sdc * Math.random();
-    // try {
-    // System.out.println("Next customer arrived in " + timeCalling + " seconds");
-    // Thread.sleep((long) timeCalling);
-    // } catch (InterruptedException e) {
-    // e.printStackTrace();
-    // }
-    // }
-
-    public void cut() throws InterruptedException {
-        double mh = 1; // mean shaving time
-        double sdh = 1; // standard deviation shaving time
-        double timeCutting = mh + sdh * Math.random();
-        try {
-            System.out.println("Customer got a haircut in " + timeCutting + " seconds");
-            Thread.sleep((long) timeCutting);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        while (true) {
+            try {
+                customerAvailable.acquire();
+                System.out.println("Customer sat down in the chair  " + this.id);
+                Thread.sleep(ThreadLocalRandom.current().nextInt(MEAN_CUT_TIME,
+                        MEAN_CUT_TIME + STANDARD_DEVIATION_CUT_TIME));
+                System.out.println("Customer got hair cut and barber " + this.id + " went to sleep");
+                barberAvailable.release();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
