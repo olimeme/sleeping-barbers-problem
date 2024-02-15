@@ -22,13 +22,9 @@ public class Customer implements Runnable {
             customerAvailable.release();
 
             if (barberAvailable.hasQueuedThreads()) {
-                
                 availableSeats.decrementAndGet();
-
-                System.out.println("Customer " + this.customerCount + " in waiting area");
-
                 barberAvailable.acquire();
-
+                System.out.println("Customer " + this.customerCount + " in waiting area");
                 availableSeats.incrementAndGet();
             } else {
                 System.out.println("Customer woke up barber");
@@ -39,4 +35,5 @@ public class Customer implements Runnable {
             e.printStackTrace();
         }
     }
+
 }
